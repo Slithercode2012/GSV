@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<!-- Generated standalone GSV file (embedded games snapshot) -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSV | Good Server Variable (Standalone)</title>
+    <style>
+        :root { 
+            --primary: #9d4edd; 
+            --bg: #0b0e14; 
+            --card: rgba(22, 27, 34, 0.8); 
+        }
+        body { 
+            background-color: var(--bg); color: white; font-family: 'Inter', sans-serif;
+            margin: 0; min-height: 100vh; overflow-x: hidden;
+        }
+
+        /* Pulsing Pigeon */
+        .pigeon {
+            font-size: 40px; display: inline-block;
+            animation: pulse 1.5s infinite ease-in-out;
+            filter: drop-shadow(0 0 8px var(--primary));
+            cursor: pointer;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; filter: drop-shadow(0 0 15px var(--primary)); }
+        }
+
+        /* Header Island */
+        .island-header {
+            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 99px;
+            padding: 10px 25px; display: flex; align-items: center; gap: 15px;
+            margin: 30px auto; width: fit-content; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Game Grid */
+        .game-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px; padding: 20px 40px; max-width: 1400px; margin: 0 auto;
+        }
+        .card {
+            background: var(--card); border-radius: 12px; overflow: hidden;
+            border: 2px solid transparent; transition: 0.3s ease; cursor: pointer;
+            aspect-ratio: 1/1; position: relative; text-decoration: none; color: inherit;
+        }
+        .card:hover { border-color: var(--primary); transform: translateY(-5px); }
+        .card img { width: 100%; height: 100%; object-fit: cover; display:block; }
+        .card-title {
+            position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85);
+            padding: 8px 4px; text-align: center; font-size: 11px; font-weight: bold;
+        }
+        .play-badge{ position:absolute; left:8px; top:8px; }
+        .play-badge .circle{ width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center}
+        .card-label{ position:absolute; bottom:6px; left:8px; right:8px; text-align:center; font-size:12px}
+
+        /* Modal Area */
+        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 9999; }
+        .modal-nav { height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 25px; background: #111; border-bottom: 1px solid var(--primary); }
+        iframe { width: 100%; height: calc(100vh - 60px); border: none; }
+
+        /* Protection Panel Elements */
+        .gate-body {
+            display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center;
+        }
+        .panel-container { padding: 30px; max-width: 650px; width: 100%; }
+        .headline { font-size: 26px; font-weight: bold; color: #ffffff; margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 12px; line-height: 1.4; }
+        .mascot { font-size: 32px; user-select: none; display: inline-block; cursor: pointer; transition: transform 0.1s ease; }
+        .mascot:active { transform: scale(0.9); }
+        .subtext { margin-top: 14px; font-size: 14px; color: #a78bfa; opacity: 0.8; font-family: monospace; }
+        .password-box { margin-top: 24px; padding: 12px 16px; width: 280px; background-color: #161b26; border: 2px solid #2d3748; border-radius: 8px; color: #ffffff; font-size: 16px; text-align: center; outline: none; transition: border-color 0.2s; }
+        .password-box:focus { border-color: #a78bfa; }
+        .submit-btn { display: block; margin: 16px auto 0 auto; padding: 10px 24px; background-color: #6d28d9; color: #ffffff; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+        .submit-btn:hover { background-color: #7c3aed; }
+
+        /* small helpers */
+        .col-span-full { grid-column: 1 / -1; }
+        .text-center{ text-align:center }
+    </style>
+</head>
+<body>
+
+    <div id="gateWrapper" class="gate-body">
+        <div class="panel-container" id="displayPanel">
+                <h1 class="headline">
+                    <span>GSV Hub is down for maintenance</span>
+                    <span class="mascot" id="birdBtn">🐦</span>
+                </h1>
+                <p class="subtext" id="textBtn" style="cursor: default; user-select: none;">URL: GSVCILM.pages.dev | Node: 226398</p>
+                
+            </div>
+    </div>
+
+    <div id="mainSiteWrapper" style="display: none;">
+        <header class="island-header">
+            <div class="pigeon" onclick="location.reload()">🐦</div>
+            <div class="font-bold text-2xl text-purple-400" style="font-family: 'Chewy';">GSV</div>
+            <div class="h-6 w-[1px] bg-white/20 mx-2"></div>
+            <input type="text" id="search" placeholder="Search modules..." class="bg-transparent outline-none text-sm w-40 text-white">
+            <i class="fas fa-search opacity-50"></i>
+        </header>
+
+        <div id="gameGrid" class="game-grid">
+            <p id="loading" class="col-span-full text-center opacity-50">Loading embedded module list...</p>
+        </div>
+
+        <div id="modal">
+            <div class="modal-nav">
+                <span id="activeGame" class="font-bold text-purple-400"></span>
+                <div class="flex gap-6">
+                    <i class="fas fa-expand cursor-pointer hover:text-purple-400" onclick="document.querySelector('iframe').requestFullscreen()"></i>
+                    <i class="fas fa-times cursor-pointer text-red-500 text-2xl" onclick="closeGame()"></i>
+                </div>
+            </div>
+            <iframe id="gameFrame" src="about:blank"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Embedded games.json (base64) snapshot from hazzatazza/algebruh-practise@main
+        const embeddedGamesBase64 = "ClsKICAgIHsKICAgICAgICAiaWQiOiAic291bmRib2FyZCIsCiAgICAgICAgInRpdGxlIjogIk1lbWUgU291bmRib2FyZCIsCiAgICAgICAgInVybCI6ICJodHRwczovL3Jhdy5naXRoYWNrLmNvbS9nZW5penkvc291bmRib2FyZC9tYWluL2luZGV4Lmh0bWwiLAogICAgICAgICJ0aHVtYiI6ICJtZW1lc291bmRib2FyZC5wbmciLAogICAgICAgICJ0eXBlIjogImFwcCIKICAgIH0sCiAgICB7CiAgICAgICAgImlkIjogInJ1ZmZsZSIsCiAgICAgICAgInRpdGxlIjogIlJ1ZmZsZSBGbGFzaCBQbGF5ZXIiLAogICAgICAgICJ1cmwiOiAiaHR0cHM6Ly9mbGFzaGJhbmdwbGF5ZXIucGFnZXMuZGV2LyIsCiAgICAgICAgInRodW1iIjogInJ1ZmZsZS5wbmciLAogICAgICAgICJ0eXBlIjogImFwcCIKICAgIH0sCiAgICB7CiAgICAgICAgImlkIjogImh0bWxydW4iLAogICAgICAgICJ0aXRsZSI6ICJIVE1MIFJ1bm5lciIsCiAgICAgICAgInVybCI6ICJodHRwczovL3Jhdy5naXRoYWNrLmNvbS9oYXp6YXRhenphL3RoZS1zdGFzaC9tYWluL2h0bWwlMjBmb3IlMjBvdGhlciUyMHN0dWZmL2h0bWxydW5uZXIuaHRtbCIsCiAgICAgICAgInRodW1iIjogImh0bWxydW5uZXIucG5nIiwKICAgICAgICAidHlwZSI6ICJhcHAiCiAgICB9LAogICAgewogICAgICAgICJpZCI6ICJib3VuY2UiLAogICAgICAgICJ0aXRsZSI6ICJCb3VuY2UgTXVzaWMiLAogICAgICAgICJ1cmwiOiAiaHR0cHM6Ly9yYXcuZ2l0aGFjay5jb20vaGF6emF0YXp6YS90aGUtc3Rhc2gvbWFpbi9odG1sJTIwZm9yJTIwb3RoZXIlMjBzdHVmZi9ib3VuY2VtdXNpYy5odG1sIiwKICAgICAgICAidGh1bWIiOiAiYm91bmNlbXVzaWMucG5nIiwKICAgICAgICAidHlwZSI6ICJhcHAiCiAgICB9LAogICAgewogICAgICAgICJpZCI6ICJzY3JhdGNoIiwKICAgICAgICAidGl0bGUiOiAiU2NyYXRjaCBFZGl0b3IiLAogICAgICAgICJ1cmwiOiAiaHR0cHM6Ly9yYXcuZ2l0aGFjay5jb20vaGF6emF0YXp6YS9zY3JhdGNoLWVkaXRvci9tYWluL2luZGV4Lmh0bWwiLAogICAgICAgICJ0aHVtYiI6ICJzY3JhdGNoLnBuZyIsCiAgICAgICAgInR5cGUiOiAiYXBwIgogICAgfSwKICAgIHsKICAgICAgICAiaWQiOiAidGVhZXJyIiwKICAgICAgICAidGl0bGUiOiAiVGVhIEVyciBMaXN0IiwKICAgICAgICAidXJsIjogImh0dHBzOi8vcmF3LmdpdGhhY2suY29tL2hhenphdGF6emEvdGhlLXN0YXNoL21haW4vaHRtbCUyMGZvciUyMG90aGVyJTIwc3R1ZmYvdGVhZXJybGlzdC5odG1sIiwKICAgICAgICAidGh1bWIiOiAidGVhZXJyLnBuZyIsCiAgICAgICAgInR5cGUiOiAiYXBwIgogICAgfSwKICAgIHsKICAgICAgICAiaWQiOiAibXVzaWNtYWtlciIsCiAgICAgICAgInRpdGxlIjogIk11c2ljIE1ha2VyIFBybyIsCiAgICAgICAgInVybCI6ICJodHRwczovL3Jhdy5naXRoYWNrLmNvbS9oYXp6YXRhenphL3RoZS1zdGFzaC9tYWluL2h0bWwlMjBmb3IlMjBvdGhlciUyMHN0dWZmL211c2ljbWFrZXJwcm8uaHRtbCIsCiAgICAgICAgInRodW1iIjogIm11c2ljbWFrZXJwcm8ucG5nIiwKICAgICAgICAidHlwZSI6ICJhcHAiCiAgICB9LAogICAgewogICAgICAgICJpZCI6ICJiZjNkIiwKICAgICAgICAidGl0bGUiOiAiQm90dGxlIEZsaXAgM0QiLAogICAgICAgICJ1cmwiOiAiaHR0cHM6Ly9yYXcuZ2l0aGFjay5jb20vb3ZvLWdhbWV6LXVuYmxvY2tlZC9ib3R0bGUtZmxpcC0zZC9tYWluL2luZGV4Lmh0bWwiLAogICAgICAgICJ0aHVtYiI6ICJib3R0bGVmbGlwLnBuZyIKICAgIH0sCiAgICB7CiAgICAgICAgImlkIjogImJqM2QiLAogICAgICAgICJ0aXRsZSI6ICJCb3R0bGUgSnVtcCAzRCIsCiAgICAgICAgInVybCI6ICJodHRwczovL3Jhdy5naXRoYWNrLmNvbS9oYXp6YXRhenphL3lvdXR1YmUtcGxheWFibGVzL21haW4vYm90dGxlLWp1bXAtM2QvaW5kZXguaHRtbCIsCiAgICAgICAgInRodW1iIjogImJvdHRsZWp1bXAucG5nIgogICAgfSwKICAgIHsKICAgICAgICAiaWQiOiAic3ciLAogICAgICAgICJ0aXRsZSI6ICJTcGFjZSBXYXZlcyIsCiAgICAgICAgInVybCI6ICJodHRwczovL3Jhdy5naXRoYWNrLmNvbS9idWJibHMvVUdTLUFzc2V0cy9tYWluL3NwYWNlJTIwd2F2ZXMvaW5kZXguaHRtbCIsCiAgICAgICAgInRodW1iIjogInNwYWNld2F2ZXMucG5nIgogICAgfSwKICAgIHsKICAgICAgICAiaWQiOiAic3NnIiwKICAgICAgICAidGl0bGUiOiAiU3VwZXIgU3RpY2ttYW4gR29sZiIsCiAgICAgICAgInVybCI6ICJodHRwczovL3Jhdy5naXRoYWNrLmNvbS9oc2luaWRldi9zdGlja21hbi1nb2xmLXVuYmxvY2tlZC9tYXN0ZXIvaW5kZXguaHRtbCIsCiAgICAgICAgInRodW1iIjogInN0aWNrbWFuZ29sZi5wbmciCiAgICB9LAogICAgewogICAgICAgICJpZCI6ICJmbmYiLAogICAgICAgICJ0aXRsZSI6ICJGcmlkYXkgTmlnaHQgRnVua2luIiwKICAgICAgICAidXJsIjogImh0dHBzOi8vcmF3LmdpdGhhY2suY29tL2dlbml6eS9mcmlkYXlmdW5rLzA5ZmRkNWYxZmE0ZGRiMzA0ZGZmN2JhZTZmNmFmNDllZGE2NjRlOGYvaW5kZXguaHRtbCIsCiAgICAgICAgInRodW1iIjogImZuZi5wbmciCiAgICB9LAogICAgewogICAgICAgICJpZCI6ICJmZCIsCiAgICAgICAgInRpdGxlIjogIkZsYXBweSBEdW5rIiwKICAgICAgICAidXJsIjogImh0dHBzOi8vcmF3LmdpdGhhY2suY29tL2FocmRldmVsb3BlcnMvZmxhcHB5LWR1bmsvbWFpbi9pbmRleC5odG1sIiwKICAgICAgICAidGh1bWIiOiAiZmxhcHB5ZHVuay5wbmciCiAgICB9LAogICAgewogICAgICAgICJpZCI6ICJvbnIiLAogICAgICAgICJ0aXRsZSI6ICJPbSBOb20gUnVuIiwKICAgICAgICAidXJsIjogImh0dHBzOi8vcmF3LmdpdGhhY2suY29tL2hhenphdGF6emEveW91dHViZS1wbGF5YWJsZXMvbWFpbi9vbS1ub20tcnVuL2luZGV4Lmh0bWwiLAogICAgICAgICJ0aHVtYiI6ICJvbW5vbXJ1bi5wbmciCiAgICB9LAogICAgewogICAgICAgICJpZCI6ICJhbXoiLAogICAgICAgICJ0aXRsZSI6ICJBbWF6ZSIsCiAgICAgICAgInVybCI6ICJodHRwczovL3Jhdy5naXRoYWNrLmNvbS9oYXp6YXRhenphL3lvdXR1YmUtcGxheWFibGVzL21haW4vYW1hemUvaW5kZXguaHRtbCIsCiAgICAgICAgInRodW1iIjogImFtYXplLnBuZyIKICAgIH0sCiAgICB7CiAgICAgICAgImlkIjogImJzIiwKICAgICAgICAidGl0bGUiOiAiQmFza2V0YmFsbCBTdGFycyIsCiAgICAgICAgInVybCI6ICJodHRwczovL3Jhdy5naXRoYWNrLmNvbS9Db29sRHVkZTIzNDkvT2ZmbGluZS1IVE1MLUdhbWVzLVBhY2svbWFzdGVyL29mZmxpbmUvYmFza2V0YmFsbC1zdGFycy5odG1sIiwKICAgICAgICAidGh1bWIiOiAiYmFza2V0YmFsbHN0YXJzLnBuZyIKICAgIH0sCiAgICB7CiAgICAgICAgImlkIjogImdiIiwKICAgICAgICAidGl0bGUiOiAiR29pbmcgQmFsbHMiLAogICAgICAgICJ1cmwiOiAiaHR0cHM6Ly9yYXcuZ2l0aGFjay5jb20vaGF6emF0YXp6YS95b3V0dWJlLXBsYXlhYmxlcy9tYWluL2dvaW5nLWJhbGxzL2luZGV4Lmh0bWwiLAogICAgICAgICJ0aHVtYiI6ICJnb2luZ2JhbGxzLnBuZyIKICAgIH0sCiAgICB7CiAgICAgICAgImlkIjogImh3IiwKICAgICAgICAidGl0bGUiOiAiSGFwcHkgV2hlZWxzIiwKICAgICAgICAidXJsIjogImh0dHBzOi8vcmF3LmdpdGhhY2suY29tL2hhenphdGF6emEvdWdzLXNpbmdsZWZpbGUv bWFpbi9VR1MtRmlsZXMvY2xoYXBweXdoZWVscy5odG1sIiwKICAgICAgICAidGh1bWIiOiAiaGFwcHl3aGVlbHMucG5nIgogICAgfSwKICAgIHsKICAgICAgICAiaWQiOiAicDJzIiwKICAgICAgICAidGl0bGUiOiAiUGFwZXIuaW8gMiAoU2tpbmxlc3MpIiwKICAgICAgICAidXJsIjogImh0dHBzOi8vcmF3LmdpdGhhY2suY29tL2Nob2NvYmFuYW5ha3VuL3BhcGVyaW8yL21haW4vaW5kZXguaHRtbCIsCiAgICAgICAgInRodW1iIjogInBhcGVyaW9za2lubGVzcy5wbmciCiAgICB9CiAgICBdCg==";
+
+        // decode and parse embedded data (the source is the external repo's games.json snapshot)
+        let embeddedGames = [];
+        try{
+            const jsonText = atob(embeddedGamesBase64.replace(/\s+/g,''));
+            embeddedGames = JSON.parse(jsonText);
+        }catch(e){
+            console.error('Failed to decode embedded games JSON', e);
+            embeddedGames = [];
+        }
+
+        // --- AUTH & LOCKOUT SYSTEM VARIABLES ---
+        let clickCounter = 0;
+        let secretPattern = [];
+        
+        const requiredClicks = 10;
+        const validKeys = ["noor stop playing games", "owner"];
+        
+        const authKey = "gsv_authorized";
+        const lockTimeKey = "gsv_lockout_time";
+        const ownerFlagKey = "gsv_is_owner";
+
+        // --- CORE GAME HUB LOGIC VARIABLES ---
+        const repoOwner = "hazzatazza";
+        const repoName = "algebruh-practise";
+        const cdnBase = `https://cdn.jsdelivr.net/gh/${repoOwner}/${repoName}@main/`;
+        let allGames = [];
+
+        // Run gate controller check on page load
+        checkSystemState();
+
+        function checkSystemState() {
+            if (sessionStorage.getItem(authKey) === "true") {
+                unlockHub();
+                return;
+            }
+
+            const lockoutTimestamp = localStorage.getItem(lockTimeKey);
+            if (lockoutTimestamp) {
+                const currentTime = Date.now();
+                const minutesRemaining = (parseInt(lockoutTimestamp) - currentTime) / 60000;
+
+                if (minutesRemaining > 0) {
+                    showHardBlockPage();
+                    return;
+                } else {
+                    localStorage.removeItem(lockTimeKey);
+                }
+            }
+
+            showMaintenancePage();
+        }
+
+        // --- PAGE 1: MAINTENANCE SCREEN ---
+        function showMaintenancePage() {
+            clickCounter = 0;
+            secretPattern = []; 
+            const panel = document.getElementById('displayPanel');
+            
+            const isOwner = localStorage.getItem(ownerFlagKey) === "true";
+            const skipButtonHtml = isOwner 
+                ? `<button type="button" class="submit-btn" id="skipBtn" style="margin-top: 20px; background-color: #1d4ed8;">Skip Authentication</button>` 
+                : '';
+
+            panel.innerHTML = `
+                <h1 class="headline">
+                    <span>GSV Hub is down for maintenance</span>
+                    <span class="mascot" id="birdBtn">🐦</span>
+                </h1>
+                <p class="subtext" id="textBtn" style="cursor: default; user-select: none;">URL: GSVCILM.pages.dev | Node: 226398</p>
+                ${skipButtonHtml}
+            `;
+            
+            document.getElementById('birdBtn').addEventListener('click', () => {
+                logPattern('bird');
+                clickCounter++;
+                if (clickCounter === requiredClicks) {
+                    showPasswordPage();
+                }
+            });
+
+            document.getElementById('textBtn').addEventListener('click', () => {
+                logPattern('text');
+            });
+
+            if (isOwner) {
+                document.getElementById('skipBtn').addEventListener('click', () => {
+                    sessionStorage.setItem(authKey, "true");
+                    unlockHub();
+                });
+            }
+        }
+
+        // Handles Owner Combo Sequence (Text -> Bird -> Text -> Text)
+        function logPattern(target) {
+            secretPattern.push(target);
+            if (secretPattern.length > 4) {
+                secretPattern.shift();
+            }
+
+            const comboString = secretPattern.join('-');
+            if (comboString === "text-bird-text-text") {
+                localStorage.setItem(ownerFlagKey, "true");
+                alert("Owner mode activated!");
+                showMaintenancePage();
+            }
+        }
+
+        // --- PAGE 2: PASSWORD PROTOCOL SCREEN ---
+        function showPasswordPage() {
+            const panel = document.getElementById('displayPanel');
+            panel.innerHTML = `
+                <h1 class="headline">
+                    <span>GSV Hub Security Protocol</span>
+                    <span class="mascot">🐦</span>
+                </h1>
+                <p class="subtext">Awaiting Authorization String...</p>
+                <input type="password" id="passInput" class="password-box" placeholder="Enter Access Key" autocomplete="off">
+                <button type="button" class="submit-btn" id="submitBtn">Verify Credentials</button>
+            `;
+
+            document.getElementById('submitBtn').addEventListener('click', verifyInput);
+            document.getElementById('passInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') verifyInput();
+            });
+        }
+
+        // --- PAGE 3: WRONG PASSWORD / DENIED SCREEN ---
+        function showAccessDeniedPage() {
+            clickCounter = 0;
+            const panel = document.getElementById('displayPanel');
+            panel.innerHTML = `
+                <h1 class="headline" style="color: #ef4444;">
+                    <span>Invalid key access denied you have been blocked from this website</span>
+                    <span class="mascot" id="birdBtn">🐦</span>
+                </h1>
+                <p class="subtext">Security Event Logged // Ref: AUTH_ERR_03</p>
+            `;
+
+            bindBirdClick(() => showPasswordPage());
+        }
+
+        // --- PAGE 4: 10-MINUTE TIME LOCKOUT SCREEN ---
+        function showHardBlockPage() {
+            clickCounter = 0;
+            const panel = document.getElementById('displayPanel');
+            panel.innerHTML = `
+                <h1 class="headline" style="color: #b91c1c;">
+                    <span>You have been blocked from this website</span>
+                    <span class="mascot" id="birdBtn">🐦</span>
+                </h1>
+                <p class="subtext">Cooling down security parameters... Try again later.</p>
+            `;
+
+            bindBirdClick(() => {
+                localStorage.removeItem(lockTimeKey);
+                showMaintenancePage();
+            });
+        }
+
+        // --- SYSTEM GATE HELPER CODES ---
+        function bindBirdClick(successCallback) {
+            document.getElementById('birdBtn').addEventListener('click', () => {
+                clickCounter++;
+                if (clickCounter === requiredClicks) {
+                    clickCounter = 0;
+                    successCallback();
+                }
+            });
+        }
+
+        function verifyInput() {
+            const inputVal = document.getElementById('passInput').value;
+
+            if (validKeys.includes(inputVal)) {
+                sessionStorage.setItem(authKey, "true");
+                unlockHub();
+            } else {
+                const tenMinutesInFuture = Date.now() + (10 * 60 * 1000); 
+                localStorage.setItem(lockTimeKey, tenMinutesInFuture.toString());
+                showAccessDeniedPage();
+            }
+        }
+
+        function unlockHub() {
+            // Drop the security wall containers completely
+            document.getElementById('gateWrapper').style.display = 'none';
+            
+            // Un-hide the genuine grid layout block
+            document.getElementById('mainSiteWrapper').style.display = 'block';
+            
+            // Fire your database connector to load games
+            initGSV();
+        }
+
+        // --- PRIMARY APP FUNCTION LOGIC (uses embeddedGames) ---
+        function initGSV() {
+            try {
+                // Map embeddedGames into the layout shape used by render()
+                allGames = embeddedGames.map(g => ({ title: g.title || g.id, url: g.url || '', thumb: g.thumb || null }));
+                if(document.getElementById('loading')) {
+                    document.getElementById('loading').remove();
+                }
+                render(allGames);
+            } catch (err) {
+                console.error("GSV Error:", err);
+                if(document.getElementById('loading')) {
+                    document.getElementById('loading').innerText = "Failed to load modules.";
+                }
+            }
+        }
+
+        function render(gamesList) {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+
+            gamesList.forEach(game => {
+                const card = document.createElement('a');
+                card.className = 'card';
+                card.onclick = (e) => { e.preventDefault(); openGame(game.url || (game.id ? (cdnBase + (game.thumb || '')) : ''), game.title); };
+
+                const thumbUrl = game.thumb ? (cdnBase + game.thumb) : 'https://via.placeholder.com/300x300?text=Module';
+
+                card.innerHTML = `
+                    <img src="${thumbUrl}" loading="lazy" onerror="this.src='https://placehold.co/300x300/101820/f5f7ff?text=Module'">
+                    <div class="card-title">${escapeHtml(game.title)}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openGame(url, title) {
+            document.getElementById('activeGame').innerText = title;
+            document.getElementById('gameFrame').src = url;
+            document.getElementById('modal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeGame() {
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById('gameFrame').src = '';
+            document.body.style.overflow = 'auto';
+        }
+
+        document.getElementById('search').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allGames.filter(g => g.title.toLowerCase().includes(term));
+            render(filtered);
+        });
+
+        function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]; }); }
+    </script>
+
+</body></html>
