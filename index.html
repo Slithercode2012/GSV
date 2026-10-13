@@ -1,75 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Interdimensional Lite — a dark glassmorphism gaming portal featuring hand-picked browser games."
-    />
-    <title>Interdimensional Lite</title>
-    <link rel="icon" type="image/png" href="https://pinkdev.d13qic2f6zga3.amplifyapp.com/Interdimensional%20Lite_files/favicon.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
-    <script src="script.js" defer></script>
-  </head>
-  <body>
-    <div class="page-shell">
-      <header class="topbar">
-        <nav class="navglass" aria-label="Main navigation">
-          <a class="brand" href="#home" aria-label="Interdimensional Lite home">
-            <img src="https://pinkdev.d13qic2f6zga3.amplifyapp.com/Interdimensional%20Lite_files/favicon.png" alt="Interdimensional Lite logo" />
-            <span>Interdimensional Lite</span>
-          </a>
-
-          <div class="nav-links">
-            <a class="nav-item active" href="#home">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-8H9v8H4a1 1 0 0 1-1-1v-9.5Z"/></svg>
-              <span>Home</span>
-            </a>
-            <a class="nav-item" href="#games">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 11h4V7H6v4Zm8 0h4V7h-4v4ZM8 13h8v4H8v-4Zm-2 0v4H3v-4h3Zm12 0v4h3v-4h-3ZM6 7V3h4v4H6Zm12 0V3h-4v4h4Z"/></svg>
-              <span>Games</span>
-            </a>
-            <a class="nav-item" href="#settings">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94c.04-.31.06-.62.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.18l-2.39.96a7.14 7.14 0 0 0-1.63-.94L14.5 2.5a.5.5 0 0 0-.5-.5h-3.99a.5.5 0 0 0-.5.5l-.26 2.4c-.57.23-1.1.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.18L2.71 9.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.62-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.18l2.39-.96c.53.4 1.06.71 1.63.94l.26 2.4a.5.5 0 0 0 .5.5h3.99a.5.5 0 0 0 .5-.5l.26-2.4c.57-.23 1.1-.54 1.63-.94l2.39.96a.5.5 0 0 0 .6-.18l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg>
-              <span>Settings</span>
-            </a>
-          </div>
-        </nav>
-      </header>
-
-      <main id="home" class="main-panel">
-        <section class="hero panel">
-          <div class="clock-wrap">
-            <div id="clock" class="clock" aria-live="polite">12:46</div>
-            <div id="meridiem" class="meridiem">PM</div>
-            <div id="date" class="date">Tuesday, October 13</div>
-          </div>
-        </section>
-
-        <section id="games" class="games-panel panel">
-          <div class="section-heading">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 11h4V7H6v4Zm8 0h4V7h-4v4ZM8 13h8v4H8v-4Zm-2 0v4H3v-4h3Zm12 0v4h3v-4h-3ZM6 7V3h4v4H6Zm12 0V3h-4v4h4Z"/></svg>
-            <h2>Popular Games</h2>
-          </div>
-
-          <div id="game-grid" class="game-grid" aria-live="polite"></div>
-        </section>
-      </main>
+<div id="modal">
+  <div class="modal-nav">
+    <span id="activeGame" class="font-bold text-purple-400"></span>
+    <span id="iframeMsg" style="color:#ddd; font-size:13px; margin:0 12px;"></span>
+    <div class="flex gap-6">
+      <i class="fas fa-expand cursor-pointer hover:text-purple-400" onclick="document.querySelector('iframe').requestFullscreen()"></i>
+      <i class="fas fa-times cursor-pointer text-red-500 text-2xl" onclick="closeGame()"></i>
     </div>
-
-    <section id="settings" class="settings-panel" aria-label="Site settings">
-      <div class="settings-shell">
-        <h3>Quick Settings</h3>
-        <div class="settings-list">
-          <button class="setting-btn" type="button">Theme</button>
-          <button class="setting-btn" type="button">Favorites</button>
-          <button class="setting-btn" type="button">Downloads</button>
-        </div>
-      </div>
-    </section>
-  </body>
-</html>
+  </div>
+  <iframe id="gameFrame" src="about:blank" title="Game preview"></iframe>
+</div>
