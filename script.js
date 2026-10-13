@@ -1,4 +1,3 @@
-// Updated script.js — now fetches external games.json from hazzatazza/algebruh-practise and falls back to local list
 const localFallbackGames = [
   { title: 'Minecraft 1.21.4', slug: 'minecraft-1-21-4', file: '183.png' },
   { title: "Five Nights at Freddy's: Sister Location", slug: 'five-nights-at-freddy-s-sister-location', file: '185.png' },
@@ -24,9 +23,7 @@ const localFallbackGames = [
 ];
 
 const gameGrid = document.getElementById('game-grid');
-// Legacy remote base for the existing local fallback thumbnails
 const remoteBase = 'https://pinkdev.d13qic2f6zga3.amplifyapp.com/Interdimensional%20Lite_files';
-// CDN base for the external repo where games.json lives
 const externalCdnBase = 'https://cdn.jsdelivr.net/gh/hazzatazza/algebruh-practise@main/';
 const externalGamesJson = `${externalCdnBase}games.json`;
 
@@ -55,16 +52,23 @@ function updateClock() {
 
 function createGameCard(game) {
   const card = document.createElement('a');
-  // prefer an absolute url if provided, otherwise fall back to a local game path using slug
-  card.href = game.url || `https://pinkdev.d13qic2f6zga3.amplifyapp.com/game/${encodeURIComponent(game.slug || game.id || game.title)}`;
+  card.href = '#';
   card.className = 'game-card';
-  card.target = '_blank';
+  card.target = '_self';
   card.rel = 'noopener noreferrer';
   card.setAttribute('aria-label', `Play ${game.title}`);
 
+  card.addEventListener('click', (e) => {
+    e.preventDefault();
+    openGame(game.url || `https://pinkdev.d13qic2f6zga3.amplifyapp.com/game/${encodeURIComponent(game.slug || game.id || game.title)}`, game.title);
+  });
+
   const img = document.createElement('img');
-  // thumbnail sources: external repo uses `thumb` property, fallback to local `file` or a placeholder
-  const thumbSrc = game.thumb ? (externalCdnBase + game.thumb) : (game.file ? `${remoteBase}/${encodeURIComponent(game.file)}` : `https://placehold.co/900x900/101820/f5f7ff?text=${encodeURIComponent(game.title)}`);
+
+  const thumbSrc = game.thumb
+    ? (externalCdnBase + game.thumb)
+    : (game.file ? `${remoteBase}/${encodeURIComponent(game.file)}` : `https://placehold.co/900x900/101820/f5f7ff?text=${encodeURIComponent(game.title)}`);
+
   img.src = thumbSrc;
   img.alt = game.title;
   img.loading = 'lazy';
@@ -78,7 +82,7 @@ function createGameCard(game) {
   playBadge.innerHTML = `
     <div class="circle">
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M8 5.5v13l10-6.5L8 5.5Z"/>
+        <path d="M8 5.5v13l10-6.5L8 5.5Z"></path>
       </svg>
     </div>
   `;
@@ -102,10 +106,10 @@ async function loadExternalGames() {
   try {
     const res = await fetch(externalGamesJson);
     if (!res.ok) throw new Error('Failed to fetch external games.json');
+
     const external = await res.json();
 
-    // The external list contains objects with { id, title, url, thumb, type }
-    const mapped = external.map(g => ({
+    const mapped = external.map((g) => ({
       title: g.title || g.id,
       url: g.url || null,
       thumb: g.thumb || null,
@@ -115,13 +119,89 @@ async function loadExternalGames() {
     renderGames(mapped);
   } catch (err) {
     console.warn('Could not load external games.json — falling back to local list.', err);
-    // map localFallbackGames into the shape expected by createGameCard
-    const mappedLocal = localFallbackGames.map(g => ({ title: g.title, slug: g.slug, file: g.file }));
+
+    const mappedLocal = localFallbackGames.map((g) => ({
+      title: g.title,
+      slug: g.slug,
+      file: g.file
+    }));
+
     renderGames(mappedLocal);
   }
 }
 
-// initialize
+function openGame(url, title) {
+  const iframe = document.getElementById('gameFrame');
+  const active = document.getElementById('activeGame');
+  const msg = document.getElementById('iframeMsg');
+
+  if (!iframe || !active || !msg) {
+    window.open(url, '_blank', 'noopener,noreferrer');
+    return;
+  }
+
+  active.innerText = title || '';
+  msg.textContent = 'Loading in iframe…';
+  iframe.src = 'about:blank';
+  iframe.style.display = 'block';
+  document.getElementById('modal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+
+  let loaded = false;
+  iframe.onload = null;
+  iframe.onerror = null;
+
+  iframe.onload = () => {
+    loaded = true;
+    msg.textContent = '';
+  };
+
+  iframe.onerror = () => {
+    loaded = false;
+    msg.innerHTML = `This site disallows embedding. <a href="${escapeHtml(url)}" target="_blank" rel="noopener">Open in new tab</a>`;
+    iframe.src = 'about:blank';
+  };
+
+  setTimeout(() => {
+    try {
+      iframe.src = url || 'about:blank';
+    } catch (e) {
+      msg.innerHTML = `Can't embed this URL. <a href="${escapeHtml(url)}" target="_blank" rel="noopener">Open in new tab</a>`;
+      iframe.src = 'about:blank';
+    }
+  }, 0);
+
+  setTimeout(() => {
+    if (!loaded) {
+      msg.innerHTML = `Unable to embed. <a href="${escapeHtml(url)}" target="_blank" rel="noopener">Open in new tab</a>`;
+      iframe.src = 'about:blank';
+    }
+  }, 2000);
+}
+
+function closeGame() {
+  const iframe = document.getElementById('gameFrame');
+  const msg = document.getElementById('iframeMsg');
+
+  document.getElementById('modal').style.display = 'none';
+  iframe.src = 'about:blank';
+  document.body.style.overflow = 'auto';
+
+  if (msg) msg.textContent = '';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>\"']/g, function(c) {
+    return {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[c];
+  });
+}
+
 updateClock();
 loadExternalGames();
 setInterval(updateClock, 15000);
